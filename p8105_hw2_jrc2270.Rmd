@@ -1,0 +1,10 @@
+---
+title: "Homework 2"
+author: "Joshua Carpenter"
+date: "2023-10-03"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+```
