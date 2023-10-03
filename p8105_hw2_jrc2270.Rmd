@@ -7,6 +7,8 @@ output: github_document
 
 ```{r setup, results='hide', message=FALSE, warning=FALSE}
 library(tidyverse)
+library(knitr)
+library(readxl)
 ```
 
 
@@ -42,9 +44,34 @@ five38 <-
   reduce(full_join, by = join_by(year, month))
 ```
 
-In this problem, we create a dataset that combines several datasets from a FiveThirtyEight article called "Science Isn’t Broken: It’s just a hell of a lot harder than we give it credit for." The result is a dataset with `r nrow(five38)` observations containing information about the number of national politicians in the US from each party, the closing values of the S&P stock index, and percent unemployment in the US for each month between `r five38[1, "month"]` `r five38[1, "year"]` and `r five38[nrow(five38), "month"]` `r five38[nrow(five38), "year"]`. There are complete data for January 1950 to June 2015 except that August to December 1974 has no president data due to a mistake in the raw data.
+In this problem, we create a dataset that combines several datasets from a FiveThirtyEight article called "Science Isn’t Broken: It’s just a hell of a lot harder than we give it credit for." The result is a dataset with `r nrow(five38)` observations containing information about the number of national politicians in the US from each party, the closing values of the S&P stock index, and percent unemployment in the US for each month between `r five38[1, "month"]` `r five38[1, "year"]` and `r five38[nrow(five38), "month"]` `r five38[nrow(five38), "year"]`. There are complete data for January 1950 to June 2015 except that August to December 1974 has no president data due to a mistake in the raw data. The variable `president` indicates whether the president was democratic ("dem") or republican ("gop") during that month, `close` indicates the closing price of the S&P stock index on one day that month, and `unemploy` gives the percent unemployment rate.
 
 ```{r, eval=FALSE}
 <<five38>>
 ```
+
+Here are the rows the resulting dataset corresponding to the year 1950:
+```{r, echo=FALSE}
+five38 %>%
+  filter(year == "1950") %>%
+  kable()
+```
+
+## Problem 2
+```{r}
+trash_wheel <-
+  read_excel("Data/202309 Trash Wheel Collection Data.xlsx", 
+             sheet = "Mr. Trash Wheel", 
+             skip = 2,
+             col_names = c("dumpster", "month", "year", "date", "weight", 
+                           "volume", "bottles_plastic", "polystyrene", 
+                           "cigarettes", "bottles_glass", "bags", "wrappers", 
+                           "balls", "homes", "drop1", "drop2")) %>%
+  select(-starts_with("drop")) %>%
+  filter(!is.na(dumpster)) %>%
+  mutate(homes_calc = weight * 500 / 30)
+trash_wheel
+```
+
+
 
