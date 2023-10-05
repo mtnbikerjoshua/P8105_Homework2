@@ -121,3 +121,44 @@ The below code code produces a combined dataset containing trash collection data
 ```{r, eval=FALSE}
 <<trash_wheel>>
 ```
+
+## Problem 3
+This problem will look at development of Mild Cognitive Impairment (MCI) over a follow-up period. The final dataset will include demographic data and biomarker values for subjects that met the inclusion criteria and have both demographic and biomarker data. The correlation of interest is between carrier status of the APOE4 gene, biomarker values, and development of MCI (recorded as `onset_age`). In the cleaning process, we will name the columns, decode sex and apeo4, and remove participants that failed to meet the inclusion criteria. The biomarker data will be converted to a one-row-per-timepoint format, then merged with the demographic data, keeping only subjects that are in both datasets.
+
+```{r}
+dm <-
+  read_csv(
+    "Data/MCI_baseline.csv", 
+    skip = 2, 
+    col_names = c("subjid", "age", "sex", "education", 
+                  "apoe4", "onset_age"),
+    na = c('.', '')) %>%
+  mutate(sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
+         apoe4 = factor(apoe4, levels = c(0, 1), 
+                        labels = c("non-carrier", "carrier"))) %>%
+  filter(is.na(onset_age) | onset_age > age)
+
+biomarker <-
+  read_csv(
+    "Data/mci_amyloid.csv",
+    skip = 2,
+    col_names = c("subjid", "Baseline", "Time 2", "Time 4", "Time 6", "Time 8")
+  ) %>%
+  pivot_longer(Baseline:`Time 8`, names_to = "timepoint", values_to = "biomarker")
+
+mci <-
+  inner_join(dm, biomarker, by = "subjid")
+```
+```{r, include=FALSE}
+N <- biomarker %>%
+  summarise(max(subjid)) %>%
+  as.numeric()
+Ndm <- dm %>%
+  summarise(max(subjid)) %>%
+  as.numeric()
+Nmci <- dm %>%
+  filter(!is.na(onset_age)) %>%
+  nrow()
+```
+
+Overall, `r N` participants were recruited, of whom, `r Ndm` had demographic data and met the inclusion criteria. Of these, `r Nmci` developed MCI.
